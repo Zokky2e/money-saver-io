@@ -21,3 +21,8 @@ def set_user_data(uid: str, data: dict):
     Saves user data to Firestore.
     """
     db.collection("users").document(uid).set(data)
+
+def update_user_data(uid: str, data: dict):
+    user_ref = db.collection("users").document(uid)
+    user_ref.set(data, merge=True)  # merge=True keeps existing fields
+    return user_ref.get().to_dict()
