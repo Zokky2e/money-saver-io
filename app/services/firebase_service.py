@@ -1,5 +1,7 @@
-from firebase_admin import auth
-from app.config import db
+from fastapi import HTTPException
+import requests
+from firebase_admin import auth, firestore
+from app.config import db, FIREBASE_API_KEY
 
 def verify_token(id_token: str):
     """
@@ -26,3 +28,29 @@ def update_user_data(uid: str, data: dict):
     user_ref = db.collection("users").document(uid)
     user_ref.set(data, merge=True)  # merge=True keeps existing fields
     return user_ref.get().to_dict()
+
+def register_user(email: str, password: str):
+    """Register a new user using Firebase Auth REST API"""
+    if (len(password) < 7):
+        raise HTTPException(status_code=400, detail=str("Password too short."))
+    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={FIREBASE_API_KEY}"
+    payload = {"email": email, "password": password, "returnSecureToken": True}
+    r = requests.post(url, json=payload)
+    r.raise_for_status()
+    return r.json()
+
+
+def login_user(email: str, password: str):
+    """Login existing user using Firebase Auth REST API"""
+    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+    payload = {"email": email, "password": password, "returnSecureToken": True}
+    r = requests.post(url, json=payload)
+    r.raise_for_status()
+    return r.json()
+
+
+def create_user_doc(uid: str):
+    """Initialize Firestore user doc if not exists"""
+    user_ref = db.collection("users").document(uid)
+    if not user_ref.get().exists:
+        user_ref.set({"monthly_salary": None, "hourly_pay": None, "total_saved": 0.0})
