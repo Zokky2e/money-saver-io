@@ -47,3 +47,13 @@ def login(data: LoginModel):
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+
+@router.post("/refresh")
+def refresh(user=Depends(get_current_user)):
+    firebase_refresh_token = user.firebase_refresh_token
+    try:
+        result = refresh_token(firebase_refresh_token)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

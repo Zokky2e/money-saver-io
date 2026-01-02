@@ -48,6 +48,18 @@ def login_user(email: str, password: str):
     r.raise_for_status()
     return r.json()
 
+def refresh_token(refresh_token: str):
+    url = "https://securetoken.googleapis.com/v1/token"
+    r = requests.post(
+        url,
+        params={"key": FIREBASE_API_KEY},
+        data = {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+        },
+    )
+    new_id_token = r.json()["id_token"]
+    return {"id_token": new_id_token}
 
 def create_user_doc(uid: str):
     """Initialize Firestore user doc if not exists"""

@@ -5,4 +5,4 @@ class MoneyInput(BaseModel):
 
 class MoneyOutput(BaseModel):
     price: float
-    working_hours: float
+    working_hours: int
